@@ -9,7 +9,6 @@ public class PolishNotation {
             System.out.println("Infix Value : " + infix);
             System.out.println("Prefix Value: " + prefixSolution);
             System.out.println("Your Answer : " + prefix);
-
         }
     }
 }

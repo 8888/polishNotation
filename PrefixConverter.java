@@ -1,3 +1,6 @@
+import java.util.Deque;
+import java.util.ArrayDeque;
+
 public class PrefixConverter {
     public String[] infixValues;
     public String[] prefixValues;
@@ -22,53 +25,44 @@ public class PrefixConverter {
     }
 
     public String convert(String infix) {
-        String result = "";
-
-        // find the parentheses
-        int start = infix.indexOf("(");
-        int end = infix.indexOf(")");
-        String paren = infix.substring(start + 1, end);
-        
-        // find index of operator
-        int i = -1;
-        for (String op: this.ops) {
-            i = paren.indexOf(op);
-            if (i != -1) {
-                // operator found
-                break;
+        // Use deques as LIFO stacks
+        // we will push and pop from the beginning of the stack
+        Deque<String> result = new ArrayDeque<String>();
+        Deque<String> operators = new ArrayDeque<String>();
+        // iterate over the string in reverse
+        for (int i = infix.length() - 1; i >= 0; i--) {
+            String item = Character.toString(infix.charAt(i));
+            if (item.equals(")")) {
+                // Close Parentheses
+                operators.addFirst(item);
+            } else if (item.equals("(")) {
+                // Open Parentheses
+                boolean searching = true;
+                while (searching) {
+                    String pop = operators.removeFirst();
+                    if (pop.equals(")")) {
+                        searching = false;
+                    } else {
+                        result.addFirst(pop);
+                    }
+                }
+            } else if (item.equals("*") || item.equals("/") || item.equals("+") || item.equals("-")) {
+                // Operator
+                operators.addFirst(item);
+            } else {
+                // Operand
+                result.addFirst(item);
             }
         }
-
-        // pull out operator , opperand 1, then opperand 2
-        result = result + paren.substring(i, i+1) + " " + paren.substring(0, i) + " " + paren.substring(i + 1);
-
-        // find where remaining values are
-        if (start == 0) {
-            // parentheses started at index 0
-            // remaining is after closing parentheses
-            infix = infix.substring(end + 1);
-        } else {
-            infix = infix.substring(0, start);
+        // push any remaining operators to the result
+        while (operators.peekFirst() != null) {
+            result.addFirst(operators.removeFirst());
         }
-
-        // seperate remaining values
-        // find index of operator
-        i = -1;
-        for (String op: this.ops) {
-            i = infix.indexOf(op);
-            if (i != -1) {
-                // operator found
-                break;
-            }
+        String prefix = "";
+        // the result is stacked
+        while (result.peekFirst() != null) {
+            prefix = prefix + result.removeFirst() + " ";
         }
-
-        // pull out operator then opperand
-        if (i == 0) {
-            result = infix.substring(i, i+1) + " " + infix.substring(i+1) + " " + result;
-        } else {
-            result = infix.substring(i, i+1) + " " + infix.substring(0, i) + " " + result;
-        }
-
-        return result;
+        return prefix;
     }
 }
